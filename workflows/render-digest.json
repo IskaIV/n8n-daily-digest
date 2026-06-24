@@ -1,0 +1,205 @@
+{
+  "name": "Daily Digest - Render",
+  "active": false,
+  "isArchived": false,
+  "description": "Receives a structured digest JSON (POST /webhook/render-digest), validates it, renders a self-contained styled HTML document, and delivers it to Telegram as a document attachment. Content is HTML-escaped in code.",
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "render-digest",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "c050b9e5-8e2c-4aca-a90c-ec0a8d83831f",
+      "name": "Webhook",
+      "webhookId": "d68fb841-c2f9-4c9c-9044-08c6c382bff4"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Validate the digest JSON OpenClaw POSTed before we render it.\n// Output: { valid, errors[], digest }. An IF node downstream routes on `valid`.\nconst SEV = ['urgent', 'attention', 'info', 'done'];\nconst errors = [];\n// n8n's Webhook node wraps the POST under `.body`; fall back to top level for manual/pinned test runs.\nconst raw = $input.first().json;\nconst d = (raw && raw.body) ? raw.body : raw;\n\nconst isArr = (x) => Array.isArray(x);\n\nfunction checkItems(arr, path) {\n  if (!isArr(arr)) { errors.push(path + ' must be an array'); return; }\n  arr.forEach((it, i) => {\n    if (typeof it !== 'object' || it === null) { errors.push(path + '[' + i + '] must be an object'); return; }\n    if (!SEV.includes(it.severity)) errors.push(path + '[' + i + '].severity must be one of ' + SEV.join('|'));\n    if (!it.chip) errors.push(path + '[' + i + '].chip is required');\n    if (!it.title) errors.push(path + '[' + i + '].title is required');\n  });\n}\n\nif (!d || typeof d !== 'object') errors.push('payload must be a JSON object');\nif (!d || !d.date || !/^\\d{4}-\\d{2}-\\d{2}$/.test(d.date)) errors.push('date must be a string in YYYY-MM-DD form');\n\nconst m = (d && d.metrics) || {};\n['todayEvents', 'overdueTasks', 'priorityEmails', 'upcomingP1P2'].forEach((k) => {\n  if (typeof m[k] !== 'number') errors.push('metrics.' + k + ' must be a number');\n});\n\nconst sch = (d && d.schedule) || {};\nif (!isArr(sch.allDay)) errors.push('schedule.allDay must be an array (use [] when empty)');\nif (!isArr(sch.timed)) errors.push('schedule.timed must be an array (use [] when empty)');\n(sch.timed || []).forEach((e, i) => { if (!e || !e.title) errors.push('schedule.timed[' + i + '].title is required'); });\n\ncheckItems(d && d.deadlines, 'deadlines');\ncheckItems(d && d.emails, 'emails');\ncheckItems(d && d.fyi, 'fyi');\n\nconst t = (d && d.todoist) || {};\n['dueToday', 'overdue', 'upcoming'].forEach((k) => {\n  if (!isArr(t[k])) errors.push('todoist.' + k + ' must be an array (use [] when empty)');\n});\n\nif (!d || !isArr(d.actions)) errors.push('actions must be an array (use [] when empty)');\n\nreturn [{ json: { valid: errors.length === 0, errors, digest: d } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "0b75bce3-a68e-4d15-8749-7b90139758d5",
+      "name": "Validate"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "1d27f9d6-fe77-4489-8821-e03520b2f254",
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "59dc3741-0259-447b-9d04-3794044ada27",
+      "name": "Valid?"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Deterministically render the validated digest JSON to a self-contained HTML\n// document and attach it as base64 binary for the Telegram node. All content\n// fields are HTML-escaped here, in code -- not trusted from the model.\nconst d = $json.digest;\n\nconst esc = (s) => String(s == null ? '' : s)\n  .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')\n  .replace(/\"/g, '&quot;').replace(/'/g, '&#39;');\n\nconst SEV = new Set(['urgent', 'attention', 'info', 'done']);\nconst sev = (s) => (SEV.has(s) ? s : 'info');\nconst chip = (severity, label) => '<span class=\"chip ' + sev(severity) + '\">' + esc(label) + '</span>';\nconst metaLine = (meta) => meta ? '<div class=\"meta\">' + esc(meta) + '</div>' : '';\nconst snippetLine = (snip) => snip ? '<div class=\"snippet\">' + esc(snip) + '</div>' : '';\nconst quiet = (msg) => '<div class=\"quiet\">' + esc(msg) + '</div>';\n\nconst item = (it) => `\n      <div class=\"item\">\n        <div class=\"row\">${chip(it.severity, it.chip)}<span class=\"title\">${esc(it.title)}</span></div>\n        ${metaLine(it.meta)}\n        ${snippetLine(it.snippet)}\n      </div>`;\n\nconst itemsOrQuiet = (arr, emptyMsg) => (arr && arr.length) ? arr.map(item).join('') : quiet(emptyMsg);\n\nconst schedule = d.schedule || { allDay: [], timed: [] };\nconst allDayHtml = (schedule.allDay && schedule.allDay.length)\n  ? schedule.allDay.map((e) => `\n      <div class=\"item\">\n        <div class=\"row\"><span class=\"chip info\">All day</span><span class=\"title\">${esc(e.title)}</span></div>\n        ${metaLine(e.meta)}\n      </div>`).join('')\n  : quiet('No all-day events found.');\nconst timedHtml = (schedule.timed && schedule.timed.length)\n  ? schedule.timed.map((e) => `\n      <div class=\"item\">\n        <div class=\"row\"><span class=\"chip info\">${esc(e.time)}</span><span class=\"title\">${esc(e.title)}</span></div>\n        ${metaLine(e.meta)}\n      </div>`).join('')\n  : quiet('No timed events today.');\n\nconst t = d.todoist || { dueToday: [], overdue: [], upcoming: [] };\nconst liList = (arr, emptyMsg) => (arr && arr.length)\n  ? '<ul>' + arr.map((x) => '<li>' + esc(x) + '</li>').join('') + '</ul>'\n  : quiet(emptyMsg);\n\nconst actions = (d.actions && d.actions.length)\n  ? '<ul>' + d.actions.map((a) => '<li>' + esc(a) + '</li>').join('') + '</ul>'\n  : quiet('No suggested actions.');\n\nconst m = d.metrics || {};\nconst weekday = d.weekday || d.date;\n\nconst html = `<!doctype html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<title>Daily Digest - ${esc(d.date)}</title>\n<style>\n    :root {\n      color-scheme: light;\n      --ink: #1f2933; --muted: #627082; --line: #d8dee8; --paper: #f6f8fb;\n      --card: #ffffff; --navy: #243b53; --teal: #157a6e; --gold: #b7791f;\n      --red: #b42318; --green: #2f855a; --blue: #2563eb;\n    }\n    * { box-sizing: border-box; }\n    body { margin: 0; background: var(--paper); color: var(--ink);\n      font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Arial, sans-serif; line-height: 1.45; }\n    .wrap { max-width: 980px; margin: 0 auto; padding: 28px 18px 44px; }\n    header { border-bottom: 1px solid var(--line); padding-bottom: 16px; margin-bottom: 18px; }\n    h1 { margin: 0 0 6px; color: var(--navy); font-size: 28px; }\n    .subhead { color: var(--muted); font-size: 14px; }\n    .summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 18px 0 22px; }\n    .metric { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 12px; }\n    .metric b { display: block; font-size: 22px; color: var(--navy); }\n    .metric span { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }\n    section { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 16px; margin: 12px 0; }\n    h2 { margin: 0 0 12px; color: var(--navy); font-size: 17px; }\n    .item { border-top: 1px solid #edf1f6; padding: 11px 0; }\n    .item:first-of-type { border-top: 0; padding-top: 0; }\n    .row { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }\n    .title { font-weight: 650; color: var(--ink); }\n    .meta { color: var(--muted); font-size: 13px; margin-top: 3px; }\n    .snippet { color: #374151; font-size: 14px; margin-top: 5px; }\n    .chip { display: inline-block; border-radius: 999px; padding: 2px 8px; font-size: 12px; font-weight: 700;\n      line-height: 1.7; border: 1px solid transparent; white-space: nowrap; }\n    .urgent { color: var(--red); background: #fff1f0; border-color: #ffd2cf; }\n    .attention { color: var(--gold); background: #fff8e6; border-color: #f6d68b; }\n    .info { color: var(--blue); background: #eef4ff; border-color: #cfe0ff; }\n    .done { color: var(--green); background: #edf7f1; border-color: #cce8d5; }\n    .quiet { color: var(--muted); font-size: 14px; padding: 2px 0; }\n    a { color: #1d4ed8; text-decoration: none; }\n    a:hover { text-decoration: underline; }\n    ul { margin: 6px 0 0 18px; padding: 0; }\n    li { margin: 5px 0; }\n    .task-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }\n    .task-col { border: 1px solid #edf1f6; border-radius: 8px; padding: 12px; min-width: 0; }\n    .task-col h3 { margin: 0 0 8px; font-size: 14px; color: var(--navy); }\n    footer { color: var(--muted); font-size: 12px; margin-top: 18px; text-align: center; }\n    @media (max-width: 760px) {\n      .summary, .task-grid { grid-template-columns: 1fr; }\n      .wrap { padding: 18px 12px 32px; }\n      h1 { font-size: 24px; } section { padding: 14px; }\n    }\n</style>\n</head>\n<body>\n<main class=\"wrap\">\n<header>\n<h1>Daily Digest</h1>\n<div class=\"subhead\">${esc(weekday)} &middot; Generated from calendar, email, and Todoist sources. Low-signal mail was filtered out.</div>\n</header>\n<div class=\"summary\" aria-label=\"Digest summary\">\n<div class=\"metric\"><b>${esc(m.todayEvents)}</b><span>Today events</span></div>\n<div class=\"metric\"><b>${esc(m.overdueTasks)}</b><span>Overdue tasks</span></div>\n<div class=\"metric\"><b>${esc(m.priorityEmails)}</b><span>Priority emails</span></div>\n<div class=\"metric\"><b>${esc(m.upcomingP1P2)}</b><span>Upcoming P1/P2</span></div>\n</div>\n<section><h2>Today&apos;s Schedule</h2>${allDayHtml}${timedHtml}</section>\n<section><h2>Upcoming Deadlines / Time-Sensitive Items</h2>${itemsOrQuiet(d.deadlines, 'Nothing time-sensitive.')}</section>\n<section><h2>Important Emails</h2>${itemsOrQuiet(d.emails, 'No priority emails.')}</section>\n<section><h2>Todoist</h2>\n<div class=\"task-grid\">\n<div class=\"task-col\"><h3>Due Today</h3>${liList(t.dueToday, 'No Todoist tasks due today.')}</div>\n<div class=\"task-col\"><h3>Overdue</h3>${liList(t.overdue, 'Nothing overdue.')}</div>\n<div class=\"task-col\"><h3>P1/P2 Next 14 Days</h3>${liList(t.upcoming, 'Nothing upcoming.')}</div>\n</div>\n</section>\n<section><h2>FYI / Low Priority</h2>${itemsOrQuiet(d.fyi, 'Nothing here.')}</section>\n<section><h2>Suggested Actions</h2>${actions}</section>\n<footer>Static local digest. Calendar, email, and task content was summarized and HTML-escaped in n8n before insertion.</footer>\n</main>\n</body>\n</html>`;\n\nconst fileName = 'daily-digest-' + d.date + '.html';\nconst base64 = Buffer.from(html, 'utf8').toString('base64');\n\nreturn [{\n  json: { fileName, caption: 'Daily Digest - ' + d.date },\n  binary: { data: { data: base64, mimeType: 'text/html', fileName, fileExtension: 'html' } },\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        624,
+        -100
+      ],
+      "id": "8d0ebb08-8432-409c-8199-9a4c48404d8b",
+      "name": "Render HTML"
+    },
+    {
+      "parameters": {
+        "operation": "sendDocument",
+        "chatId": "",
+        "binaryData": true,
+        "binaryPropertyName": "data",
+        "additionalFields": {
+          "caption": "={{ $json.caption }}",
+          "fileName": "={{ $json.fileName }}"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        832,
+        -100
+      ],
+      "id": "19d9d856-a344-4633-ac7e-936dac818d8b",
+      "name": "Send to Telegram"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "Daily digest HTML delivered.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1040,
+        -100
+      ],
+      "id": "eaeff3e6-a55e-4511-b299-92652e0619a8",
+      "name": "Respond OK"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"valid\": false, \"errors\": $json.errors } }}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        624,
+        120
+      ],
+      "id": "c2115313-17df-4896-aedf-e9fc2bd42370",
+      "name": "Respond Invalid"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Validate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate": {
+      "main": [
+        [
+          {
+            "node": "Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Valid?": {
+      "main": [
+        [
+          {
+            "node": "Render HTML",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Invalid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Render HTML": {
+      "main": [
+        [
+          {
+            "node": "Send to Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send to Telegram": {
+      "main": [
+        [
+          {
+            "node": "Respond OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
