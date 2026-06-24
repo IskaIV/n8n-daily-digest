@@ -11,7 +11,7 @@
   },
   "nodes": [
     {
-      "parameters": { "path": "digest", "responseMode": "responseNode", "options": {} },
+      "parameters": { "path": "email", "responseMode": "responseNode", "options": {} },
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
       "position": [-176, 176],
