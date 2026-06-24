@@ -1,0 +1,310 @@
+{
+  "name": "Daily Digest - Todoist",
+  "active": false,
+  "isArchived": false,
+  "description": "Pulls Todoist tasks due today, overdue, and P1/P2 (by due date or deadline) in the next 14 days; groups them and emits both structured objects and ready-made display strings via webhook (GET /webhook/todoist).",
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "path": "todoist",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        200
+      ],
+      "id": "d654324e-6ebc-460e-80ad-76e660e8a3f2",
+      "name": "Webhook",
+      "webhookId": "a5b5e28a-57df-461b-a0e1-f996b1597773"
+    },
+    {
+      "parameters": {
+        "resource": "task",
+        "operation": "getAll",
+        "authentication": "apiKey",
+        "returnAll": true,
+        "filters": {
+          "filter": "today"
+        }
+      },
+      "type": "n8n-nodes-base.todoist",
+      "typeVersion": 2.2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "ca7c2e64-1a9e-49e6-a7fe-58ea6230bcbf",
+      "name": "Get Due Today"
+    },
+    {
+      "parameters": {
+        "resource": "task",
+        "operation": "getAll",
+        "authentication": "apiKey",
+        "returnAll": true,
+        "filters": {
+          "filter": "overdue"
+        }
+      },
+      "type": "n8n-nodes-base.todoist",
+      "typeVersion": 2.2,
+      "position": [
+        208,
+        200
+      ],
+      "id": "986833e3-5f64-4bd2-ac0f-b2c99b6f89f0",
+      "name": "Get Overdue"
+    },
+    {
+      "parameters": {
+        "resource": "task",
+        "operation": "getAll",
+        "authentication": "apiKey",
+        "returnAll": true,
+        "filters": {
+          "filter": "(p1 | p2) & ((due after: today & due before: +15 days) | (deadline after: today & deadline before: +15 days))"
+        }
+      },
+      "type": "n8n-nodes-base.todoist",
+      "typeVersion": 2.2,
+      "position": [
+        208,
+        400
+      ],
+      "id": "7d48cfef-b1e7-42ad-8ff7-2f74d1a8b4b5",
+      "name": "Get Upcoming P1/P2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "366e799d-9371-4d2c-a727-e5e3a3696ef1",
+              "name": "bucket",
+              "value": "dueToday",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        416,
+        0
+      ],
+      "id": "7d3b6ae4-bfda-47ef-9c91-a63e0748ff0d",
+      "name": "Tag dueToday"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6bf14aff-5f7e-476c-9b28-55bb42d700a7",
+              "name": "bucket",
+              "value": "overdue",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        416,
+        200
+      ],
+      "id": "1666b29e-0381-4f15-b8b6-bde85f8c25c0",
+      "name": "Tag overdue"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b3b93ca4-2929-4628-8178-7b07c4f1ddae",
+              "name": "bucket",
+              "value": "upcoming",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        416,
+        400
+      ],
+      "id": "2e33ce71-4ed4-4c76-ae95-29bb8c68626b",
+      "name": "Tag upcoming"
+    },
+    {
+      "parameters": {
+        "mode": "append",
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        624,
+        200
+      ],
+      "id": "35ac47fd-d039-4717-9aa5-8e9b803c22bb",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Group the three Todoist pulls (tagged with `bucket`) into a clean digest shape,\n// and emit ready-made display strings the digest can drop straight into todoist.*.\n// Todoist REST priority is 4=highest..1=lowest; map to P1..P4 (P1 = highest, UI-style).\nconst labelP = (p) => 'P' + (5 - (p || 1));\nconst order = { P1: 0, P2: 1, P3: 2, P4: 3 };\nconst MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];\nconst pretty = (iso) => {\n  if (!iso) return '';\n  const m = /^(\\d{4})-(\\d{2})-(\\d{2})/.exec(iso);\n  return m ? MON[+m[2] - 1] + ' ' + (+m[3]) : iso;\n};\n\nconst buckets = { dueToday: [], overdue: [], upcoming: [] };\n\nfor (const it of $input.all()) {\n  const j = it.json;\n  const b = j.bucket;\n  if (!buckets[b]) continue;\n  const due = j.due || {};\n  buckets[b].push({\n    content: j.content || '',\n    priority: labelP(j.priority),\n    due: due.date || due.datetime || '',\n    dueString: due.string || '',\n    deadline: (j.deadline && j.deadline.date) || '',\n    url: j.url || '',\n  });\n}\n\nfor (const k of Object.keys(buckets)) {\n  buckets[k].sort((a, b) =>\n    (order[a.priority] - order[b.priority]) || String(a.due).localeCompare(String(b.due)));\n}\n\n// \"P1: \" / \"P2: \" prefix only (P3/P4 default priority shows no prefix).\nconst priPrefix = (t) => (t.priority === 'P1' || t.priority === 'P2') ? t.priority + ': ' : '';\nconst plainLine = (t) => priPrefix(t) + t.content;\nconst upcomingLine = (t) => {\n  const useDeadline = !!t.deadline;\n  const when = useDeadline ? pretty(t.deadline) : (t.dueString || pretty(t.due));\n  const label = useDeadline ? 'deadline' : 'due';\n  return when ? `${t.priority}, ${label} ${when}: ${t.content}` : `${t.priority}: ${t.content}`;\n};\n\nreturn [{ json: {\n  generatedAt: new Date().toISOString(),\n  counts: {\n    dueToday: buckets.dueToday.length,\n    overdue: buckets.overdue.length,\n    upcoming: buckets.upcoming.length,\n  },\n  dueToday: buckets.dueToday,\n  overdue: buckets.overdue,\n  upcoming: buckets.upcoming,\n  // Ready-to-use strings for todoist.dueToday / todoist.overdue / todoist.upcoming.\n  lines: {\n    dueToday: buckets.dueToday.map(plainLine),\n    overdue: buckets.overdue.map(plainLine),\n    upcoming: buckets.upcoming.map(upcomingLine),\n  },\n} }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        832,
+        200
+      ],
+      "id": "74f32c83-aaf5-4e35-a446-35fd9623b2fe",
+      "name": "Group by bucket"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1040,
+        200
+      ],
+      "id": "40326cc4-133e-465f-b0cd-38f2453fed8f",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Get Due Today",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Overdue",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Upcoming P1/P2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Due Today": {
+      "main": [
+        [
+          {
+            "node": "Tag dueToday",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Overdue": {
+      "main": [
+        [
+          {
+            "node": "Tag overdue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Upcoming P1/P2": {
+      "main": [
+        [
+          {
+            "node": "Tag upcoming",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tag dueToday": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tag overdue": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Tag upcoming": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Group by bucket",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Group by bucket": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
