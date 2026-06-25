@@ -28,7 +28,7 @@ POST /webhook/render-digest (JSON)
 1. n8n -> Workflows -> Import from File -> `workflows/render-digest.json`.
 2. Attach a **Telegram** credential to the *Send to Telegram* node, and set the
    `chatId` field on that node to your own Telegram chat ID.
-3. Activate. The endpoint is `POST http://localhost:5678/webhook/render-digest`.
+3. Activate. The endpoint is `POST http://localhost:5678/webhook/render`.
 
 ## JSON contract
 
