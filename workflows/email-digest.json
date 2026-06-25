@@ -1,21 +1,19 @@
-{
-  "id": "b721Oi5URJdGxvca",
-  "name": "Daily Digest - Email",
-  "active": true,
-  "isArchived": false,
-  "description": "This pulls emails from multiple Gmail and Outlook accounts, merges, sorts, cleans and outputs them to be used in a daily digest",
-  "settings": {
-    "executionOrder": "v1",
-    "binaryMode": "separate",
-    "availableInMCP": true
-  },
+﻿{
+  "name": "email-digest",
   "nodes": [
     {
-      "parameters": { "path": "email", "responseMode": "responseNode", "options": {} },
+      "parameters": {
+        "path": "email",
+        "responseMode": "responseNode",
+        "options": {}
+      },
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
-      "position": [-176, 176],
-      "id": "e9f72137-24b2-4372-84f7-a048b723e1e6",
+      "position": [
+        -224,
+        672
+      ],
+      "id": "3e4e75ac-2020-4b66-bd41-4473f3182bff",
       "name": "Webhook",
       "webhookId": "ff6ca0ab-b437-4b09-987d-4df5fcf7e8c1"
     },
@@ -23,86 +21,162 @@
       "parameters": {
         "operation": "getAll",
         "returnAll": true,
-        "filters": { "receivedAfter": "={{ $now.minus(1, 'day').toISO() }}" }
+        "filters": {
+          "receivedAfter": "={{ $now.minus(1, 'day').toISO() }}"
+        }
       },
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.2,
-      "position": [48, 848],
-      "id": "fdcaa9ad-26f2-4951-a846-59afedcf3fe6",
-      "name": "Get JonDoe@Gmail6 Mail",
-      "webhookId": "284468c9-9c6a-4d44-a376-8a7a6cad68f5"
+      "position": [
+        0,
+        1344
+      ],
+      "id": "b464b3db-39f8-41b7-9cf1-48784836ff33",
+      "name": "Get Gmail4 Mail",
+      "webhookId": "284468c9-9c6a-4d44-a376-8a7a6cad68f5",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "YOUR_GMAIL_CRED_4_ID",
+          "name": "Gmail Account 4"
+        }
+      }
     },
     {
       "parameters": {
         "operation": "getAll",
         "returnAll": true,
-        "filters": { "receivedAfter": "={{ $now.minus(1, 'day').toISO() }}" }
+        "filters": {
+          "receivedAfter": "={{ $now.minus(1, 'day').toISO() }}"
+        }
       },
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.2,
-      "position": [48, 656],
-      "id": "275a20c7-22e9-42db-9d0a-ce9056d35dc1",
-      "name": "Get JonDoe@Gmail5 Mail",
-      "webhookId": "284468c9-9c6a-4d44-a376-8a7a6cad68f5"
+      "position": [
+        0,
+        1152
+      ],
+      "id": "de067da5-47b2-4ac4-90ec-a94b3c1c72a0",
+      "name": "Get Gmail3 Mail",
+      "webhookId": "284468c9-9c6a-4d44-a376-8a7a6cad68f5",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "YOUR_GMAIL_CRED_3_ID",
+          "name": "Gmail Account 3"
+        }
+      }
     },
     {
       "parameters": {
         "operation": "getAll",
         "returnAll": true,
-        "filters": { "receivedAfter": "={{ $now.minus(1, 'day').toISO() }}" }
+        "filters": {
+          "receivedAfter": "={{ $now.minus(1, 'day').toISO() }}"
+        }
       },
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.2,
-      "position": [48, 272],
-      "id": "bf01b065-0181-4427-8040-2f9e1fa81f2f",
-      "name": "Get JonDoe@Gmail3 Mail",
-      "webhookId": "284468c9-9c6a-4d44-a376-8a7a6cad68f5"
+      "position": [
+        0,
+        768
+      ],
+      "id": "0bf9c992-c778-4d0d-9eb7-4b0de64aac4c",
+      "name": "Get Gmail1 Mail",
+      "webhookId": "284468c9-9c6a-4d44-a376-8a7a6cad68f5",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "YOUR_GMAIL_CRED_1_ID",
+          "name": "Gmail Account 1"
+        }
+      }
     },
     {
       "parameters": {
         "operation": "getAll",
         "returnAll": true,
-        "filters": { "receivedAfter": "={{ $now.minus(1, 'day').toISO() }}" }
+        "filters": {
+          "receivedAfter": "={{ $now.minus(1, 'day').toISO() }}"
+        }
       },
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.2,
-      "position": [48, 464],
-      "id": "a7c986e5-631b-4cef-9187-fe0f7242af22",
-      "name": "Get JonDoe@Gmail4 Mail",
-      "webhookId": "284468c9-9c6a-4d44-a376-8a7a6cad68f5"
+      "position": [
+        0,
+        960
+      ],
+      "id": "87cbb3b6-b2d0-4537-bca6-f520b35ffc5d",
+      "name": "Get Gmail2 Mail",
+      "webhookId": "284468c9-9c6a-4d44-a376-8a7a6cad68f5",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "YOUR_GMAIL_CRED_2_ID",
+          "name": "Gmail Account 2"
+        }
+      }
     },
     {
       "parameters": {
         "operation": "getAll",
         "returnAll": true,
-        "filters": { "receivedAfter": "={{ $now.minus(1, 'day').toISO() }}" }
+        "filters": {
+          "receivedAfter": "={{ $now.minus(1, 'day').toISO() }}"
+        }
       },
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.2,
-      "position": [48, 80],
-      "id": "5d54cb70-e01c-4afa-acab-75eacad61704",
-      "name": "Get JonDoe@Gmail2 Mail",
-      "webhookId": "284468c9-9c6a-4d44-a376-8a7a6cad68f5"
+      "position": [
+        0,
+        576
+      ],
+      "id": "6f0f42d4-1f2c-4f2c-897a-641b66b32d0b",
+      "name": "Get Gmail5 Mail",
+      "webhookId": "284468c9-9c6a-4d44-a376-8a7a6cad68f5",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "YOUR_GMAIL_CRED_5_ID",
+          "name": "Gmail Account 5"
+        }
+      }
     },
     {
       "parameters": {
         "operation": "getAll",
         "returnAll": true,
-        "filters": { "receivedAfter": "={{ $now.minus(1, 'day').toISO() }}" }
+        "filters": {
+          "receivedAfter": "={{ $now.minus(1, 'day').toISO() }}"
+        }
       },
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.2,
-      "position": [48, -112],
-      "id": "92213ac4-9800-4665-bde0-86d3f6982fc7",
-      "name": "Get JonDoe@Gmail1 Mail",
-      "webhookId": "284468c9-9c6a-4d44-a376-8a7a6cad68f5"
+      "position": [
+        0,
+        384
+      ],
+      "id": "2c323fe8-e8dd-458c-b891-1249d69b789f",
+      "name": "Get Gmail6 Mail",
+      "webhookId": "284468c9-9c6a-4d44-a376-8a7a6cad68f5",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "YOUR_GMAIL_CRED_6_ID",
+          "name": "Gmail Account 6"
+        }
+      }
     },
     {
       "parameters": {
         "assignments": {
           "assignments": [
-            { "id": "2df5a904-6832-42d1-aa22-fefc34f5debc", "name": "account", "value": "JonDoe - Gmail3", "type": "string" },
-            { "id": "493389b2-8fef-4654-b913-a184875760b8", "name": "source", "value": "Gmail", "type": "string" }
+            {
+              "id": "2df5a904-6832-42d1-aa22-fefc34f5debc",
+              "name": "account",
+              "value": "Gmail Account 1",
+              "type": "string"
+            },
+            {
+              "id": "493389b2-8fef-4654-b913-a184875760b8",
+              "name": "source",
+              "value": "Gmail",
+              "type": "string"
+            }
           ]
         },
         "includeOtherFields": true,
@@ -110,16 +184,29 @@
       },
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
-      "position": [272, 272],
-      "id": "d8219fec-68ca-477b-a625-b23268268c07",
+      "position": [
+        224,
+        768
+      ],
+      "id": "e0de2872-fbe8-48b4-a26a-026bc475ede0",
       "name": "Edit Fields"
     },
     {
       "parameters": {
         "assignments": {
           "assignments": [
-            { "id": "2df5a904-6832-42d1-aa22-fefc34f5debc", "name": "account", "value": "JonDoe - Gmail6", "type": "string" },
-            { "id": "493389b2-8fef-4654-b913-a184875760b8", "name": "source", "value": "Gmail", "type": "string" }
+            {
+              "id": "2df5a904-6832-42d1-aa22-fefc34f5debc",
+              "name": "account",
+              "value": "Gmail Account 4",
+              "type": "string"
+            },
+            {
+              "id": "493389b2-8fef-4654-b913-a184875760b8",
+              "name": "source",
+              "value": "Gmail",
+              "type": "string"
+            }
           ]
         },
         "includeOtherFields": true,
@@ -127,16 +214,29 @@
       },
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
-      "position": [272, 848],
-      "id": "cd1af043-870b-4bab-839c-3a7afaa7050e",
+      "position": [
+        224,
+        1344
+      ],
+      "id": "f5a47a59-1d55-47f7-b6f9-c986c70a9c6e",
       "name": "Edit Fields1"
     },
     {
       "parameters": {
         "assignments": {
           "assignments": [
-            { "id": "2df5a904-6832-42d1-aa22-fefc34f5debc", "name": "account", "value": "JonDoe - Gmail4", "type": "string" },
-            { "id": "493389b2-8fef-4654-b913-a184875760b8", "name": "source", "value": "Gmail", "type": "string" }
+            {
+              "id": "2df5a904-6832-42d1-aa22-fefc34f5debc",
+              "name": "account",
+              "value": "Gmail Account 2",
+              "type": "string"
+            },
+            {
+              "id": "493389b2-8fef-4654-b913-a184875760b8",
+              "name": "source",
+              "value": "Gmail",
+              "type": "string"
+            }
           ]
         },
         "includeOtherFields": true,
@@ -144,16 +244,29 @@
       },
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
-      "position": [272, 464],
-      "id": "88497cf7-abd7-4cae-80fa-b5896fd1fdbc",
+      "position": [
+        224,
+        960
+      ],
+      "id": "55228ebf-968c-4ed0-bb5e-42d49917b0fc",
       "name": "Edit Fields2"
     },
     {
       "parameters": {
         "assignments": {
           "assignments": [
-            { "id": "2df5a904-6832-42d1-aa22-fefc34f5debc", "name": "account", "value": "JonDoe - Gmail5", "type": "string" },
-            { "id": "493389b2-8fef-4654-b913-a184875760b8", "name": "source", "value": "Gmail", "type": "string" }
+            {
+              "id": "2df5a904-6832-42d1-aa22-fefc34f5debc",
+              "name": "account",
+              "value": "Gmail Account 3",
+              "type": "string"
+            },
+            {
+              "id": "493389b2-8fef-4654-b913-a184875760b8",
+              "name": "source",
+              "value": "Gmail",
+              "type": "string"
+            }
           ]
         },
         "includeOtherFields": true,
@@ -161,16 +274,29 @@
       },
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
-      "position": [272, 656],
-      "id": "8d5aa628-e373-46db-92bf-1b3347ac56e0",
+      "position": [
+        224,
+        1152
+      ],
+      "id": "58cd87c3-bdd2-4c98-8a7b-a1c44e4b2699",
       "name": "Edit Fields3"
     },
     {
       "parameters": {
         "assignments": {
           "assignments": [
-            { "id": "2df5a904-6832-42d1-aa22-fefc34f5debc", "name": "account", "value": "JonDoe - Gmail2", "type": "string" },
-            { "id": "493389b2-8fef-4654-b913-a184875760b8", "name": "source", "value": "Gmail", "type": "string" }
+            {
+              "id": "2df5a904-6832-42d1-aa22-fefc34f5debc",
+              "name": "account",
+              "value": "Gmail Account 5",
+              "type": "string"
+            },
+            {
+              "id": "493389b2-8fef-4654-b913-a184875760b8",
+              "name": "source",
+              "value": "Gmail",
+              "type": "string"
+            }
           ]
         },
         "includeOtherFields": true,
@@ -178,16 +304,29 @@
       },
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
-      "position": [272, 80],
-      "id": "08cf7c49-b9e7-4e88-87eb-e29182cb80d8",
+      "position": [
+        224,
+        576
+      ],
+      "id": "eda4dc56-ee19-4c95-b4a9-bcba522e1067",
       "name": "Edit Fields4"
     },
     {
       "parameters": {
         "assignments": {
           "assignments": [
-            { "id": "2df5a904-6832-42d1-aa22-fefc34f5debc", "name": "account", "value": "JonDoe - Gmail1", "type": "string" },
-            { "id": "493389b2-8fef-4654-b913-a184875760b8", "name": "source", "value": "Gmail", "type": "string" }
+            {
+              "id": "2df5a904-6832-42d1-aa22-fefc34f5debc",
+              "name": "account",
+              "value": "Gmail Account 6",
+              "type": "string"
+            },
+            {
+              "id": "493389b2-8fef-4654-b913-a184875760b8",
+              "name": "source",
+              "value": "Gmail",
+              "type": "string"
+            }
           ]
         },
         "includeOtherFields": true,
@@ -195,24 +334,37 @@
       },
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
-      "position": [272, -112],
-      "id": "0aa4d458-70bd-4529-a1c1-ec723584357d",
+      "position": [
+        224,
+        384
+      ],
+      "id": "205c7702-bd73-46de-95cc-c6703cae02ae",
       "name": "Edit Fields5"
     },
     {
-      "parameters": { "options": {} },
+      "parameters": {
+        "options": {}
+      },
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
-      "position": [944, 176],
-      "id": "db651638-45bd-4ec7-873f-2f23921e1244",
+      "position": [
+        896,
+        672
+      ],
+      "id": "02f8525c-4955-4a7e-86b6-267367951080",
       "name": "Respond to Webhook"
     },
     {
-      "parameters": { "numberInputs": 8 },
+      "parameters": {
+        "numberInputs": 8
+      },
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
-      "position": [496, 80],
-      "id": "00e6b505-ea9b-4cc3-bfe1-82aecfc1b4f7",
+      "position": [
+        448,
+        576
+      ],
+      "id": "a56df49f-30ab-4fe8-a90f-fbf518d7a68c",
       "name": "Merge"
     },
     {
@@ -221,8 +373,11 @@
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [720, 176],
-      "id": "bb343794-fc4e-47ad-8164-fd31d12097df",
+      "position": [
+        672,
+        672
+      ],
+      "id": "6c6c35a1-5276-4a97-80a8-719e6ce53e3f",
       "name": "Normalize, Sort"
     },
     {
@@ -230,37 +385,77 @@
         "operation": "getAll",
         "returnAll": true,
         "output": "raw",
-        "filtersUI": { "values": { "filters": { "receivedAfter": "={{ $now.minus(1,'day').toISO() }}" } } },
+        "filtersUI": {
+          "values": {
+            "filters": {
+              "receivedAfter": "={{ $now.minus(1,'day').toISO() }}"
+            }
+          }
+        },
         "options": {}
       },
       "type": "n8n-nodes-base.microsoftOutlook",
       "typeVersion": 2,
-      "position": [48, -496],
-      "id": "8ff7f714-603e-49c0-a4d8-94ab6d065445",
-      "name": "Get JonDoe@Outlook1 Mail",
-      "webhookId": "aa1aa4e2-905f-4fea-85b5-f723d0024df7"
+      "position": [
+        0,
+        0
+      ],
+      "id": "fb7812c6-f21e-497b-8707-6bc8439b471b",
+      "name": "Get Outlook1 Mail",
+      "webhookId": "aa1aa4e2-905f-4fea-85b5-f723d0024df7",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "YOUR_OUTLOOK_CRED_1_ID",
+          "name": "Outlook Account 1"
+        }
+      }
     },
     {
       "parameters": {
         "operation": "getAll",
         "returnAll": true,
         "output": "raw",
-        "filtersUI": { "values": { "filters": { "receivedAfter": "={{ $now.minus(1,'day').toISO() }}" } } },
+        "filtersUI": {
+          "values": {
+            "filters": {
+              "receivedAfter": "={{ $now.minus(1,'day').toISO() }}"
+            }
+          }
+        },
         "options": {}
       },
       "type": "n8n-nodes-base.microsoftOutlook",
       "typeVersion": 2,
-      "position": [48, -304],
-      "id": "8c98a70c-10e8-411d-9f5a-fab1676f1056",
-      "name": "Get JonDoe@Outlook2 Mail",
-      "webhookId": "aa1aa4e2-905f-4fea-85b5-f723d0024df7"
+      "position": [
+        0,
+        192
+      ],
+      "id": "c47a5b30-d3d6-4d34-b6d2-d62fb19e921e",
+      "name": "Get Outlook2 Mail",
+      "webhookId": "aa1aa4e2-905f-4fea-85b5-f723d0024df7",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "YOUR_OUTLOOK_CRED_2_ID",
+          "name": "Outlook Account 2"
+        }
+      }
     },
     {
       "parameters": {
         "assignments": {
           "assignments": [
-            { "id": "2df5a904-6832-42d1-aa22-fefc34f5debc", "name": "account", "value": "JonDoe - Outlook1", "type": "string" },
-            { "id": "493389b2-8fef-4654-b913-a184875760b8", "name": "source", "value": "Outlook", "type": "string" }
+            {
+              "id": "2df5a904-6832-42d1-aa22-fefc34f5debc",
+              "name": "account",
+              "value": "Outlook Account 1",
+              "type": "string"
+            },
+            {
+              "id": "493389b2-8fef-4654-b913-a184875760b8",
+              "name": "source",
+              "value": "Outlook",
+              "type": "string"
+            }
           ]
         },
         "includeOtherFields": true,
@@ -268,16 +463,29 @@
       },
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
-      "position": [272, -496],
-      "id": "b50242db-52bc-41c4-a396-4b694a013695",
+      "position": [
+        224,
+        0
+      ],
+      "id": "75277782-af96-4681-a982-b6e58ef124d1",
       "name": "Edit Fields6"
     },
     {
       "parameters": {
         "assignments": {
           "assignments": [
-            { "id": "2df5a904-6832-42d1-aa22-fefc34f5debc", "name": "account", "value": "JonDoe - Outlook2", "type": "string" },
-            { "id": "493389b2-8fef-4654-b913-a184875760b8", "name": "source", "value": "Outlook", "type": "string" }
+            {
+              "id": "2df5a904-6832-42d1-aa22-fefc34f5debc",
+              "name": "account",
+              "value": "Outlook Account 2",
+              "type": "string"
+            },
+            {
+              "id": "493389b2-8fef-4654-b913-a184875760b8",
+              "name": "source",
+              "value": "Outlook",
+              "type": "string"
+            }
           ]
         },
         "includeOtherFields": true,
@@ -285,43 +493,276 @@
       },
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
-      "position": [272, -304],
-      "id": "94011b87-5fb2-4994-a3eb-4ba2f850b712",
+      "position": [
+        224,
+        192
+      ],
+      "id": "fb4ecd23-1682-43f6-adae-5ae78c676963",
       "name": "Edit Fields7"
     }
   ],
+  "pinData": {},
   "connections": {
     "Webhook": {
       "main": [
         [
-          { "node": "Get JonDoe@Outlook1 Mail", "type": "main", "index": 0 },
-          { "node": "Get JonDoe@Outlook2 Mail", "type": "main", "index": 0 },
-          { "node": "Get JonDoe@Gmail1 Mail", "type": "main", "index": 0 },
-          { "node": "Get JonDoe@Gmail2 Mail", "type": "main", "index": 0 },
-          { "node": "Get JonDoe@Gmail3 Mail", "type": "main", "index": 0 },
-          { "node": "Get JonDoe@Gmail4 Mail", "type": "main", "index": 0 },
-          { "node": "Get JonDoe@Gmail5 Mail", "type": "main", "index": 0 },
-          { "node": "Get JonDoe@Gmail6 Mail", "type": "main", "index": 0 }
+          {
+            "node": "Get Outlook1 Mail",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Outlook2 Mail",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Gmail6 Mail",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Gmail5 Mail",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Gmail1 Mail",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Gmail2 Mail",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Gmail3 Mail",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Gmail4 Mail",
+            "type": "main",
+            "index": 0
+          }
         ]
       ]
     },
-    "Get JonDoe@Gmail3 Mail": { "main": [[{ "node": "Edit Fields", "type": "main", "index": 0 }]] },
-    "Get JonDoe@Gmail6 Mail": { "main": [[{ "node": "Edit Fields1", "type": "main", "index": 0 }]] },
-    "Get JonDoe@Gmail4 Mail": { "main": [[{ "node": "Edit Fields2", "type": "main", "index": 0 }]] },
-    "Get JonDoe@Gmail5 Mail": { "main": [[{ "node": "Edit Fields3", "type": "main", "index": 0 }]] },
-    "Get JonDoe@Gmail2 Mail": { "main": [[{ "node": "Edit Fields4", "type": "main", "index": 0 }]] },
-    "Get JonDoe@Gmail1 Mail": { "main": [[{ "node": "Edit Fields5", "type": "main", "index": 0 }]] },
-    "Edit Fields3": { "main": [[{ "node": "Merge", "type": "main", "index": 6 }]] },
-    "Edit Fields": { "main": [[{ "node": "Merge", "type": "main", "index": 4 }]] },
-    "Edit Fields1": { "main": [[{ "node": "Merge", "type": "main", "index": 7 }]] },
-    "Edit Fields2": { "main": [[{ "node": "Merge", "type": "main", "index": 5 }]] },
-    "Edit Fields4": { "main": [[{ "node": "Merge", "type": "main", "index": 3 }]] },
-    "Edit Fields5": { "main": [[{ "node": "Merge", "type": "main", "index": 2 }]] },
-    "Merge": { "main": [[{ "node": "Normalize, Sort", "type": "main", "index": 0 }]] },
-    "Normalize, Sort": { "main": [[{ "node": "Respond to Webhook", "type": "main", "index": 0 }]] },
-    "Get JonDoe@Outlook1 Mail": { "main": [[{ "node": "Edit Fields6", "type": "main", "index": 0 }]] },
-    "Get JonDoe@Outlook2 Mail": { "main": [[{ "node": "Edit Fields7", "type": "main", "index": 0 }]] },
-    "Edit Fields7": { "main": [[{ "node": "Merge", "type": "main", "index": 1 }]] },
-    "Edit Fields6": { "main": [[{ "node": "Merge", "type": "main", "index": 0 }]] }
-  }
+    "Get Gmail1 Mail": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Gmail4 Mail": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Gmail2 Mail": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Gmail3 Mail": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Gmail5 Mail": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Gmail6 Mail": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields3": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 6
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 4
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 7
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 5
+          }
+        ]
+      ]
+    },
+    "Edit Fields4": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Edit Fields5": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Normalize, Sort",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize, Sort": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Outlook1 Mail": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Outlook2 Mail": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields7": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Edit Fields6": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "timeSavedPerExecution": 60
+  },
+  "versionId": "edddd80d-9be4-4d4e-ae75-60f959c552c1",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "YOUR_INSTANCE_ID"
+  },
+  "nodeGroups": [],
+  "id": "b721Oi5URJdGxvca",
+  "tags": []
 }

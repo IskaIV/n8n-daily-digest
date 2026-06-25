@@ -1,21 +1,19 @@
-{
-  "id": "tr0orqmOqz5GiQ4F",
-  "name": "Daily Digest - Calendar",
-  "active": false,
-  "isArchived": false,
-  "description": "This pulls calendar events from Google and Outlook accounts, merges, sorts, cleans and outputs them to be used in a daily digest",
-  "settings": {
-    "executionOrder": "v1",
-    "binaryMode": "separate",
-    "availableInMCP": true
-  },
+﻿{
+  "name": "calendar-digest",
   "nodes": [
     {
-      "parameters": { "path": "calendar", "responseMode": "responseNode", "options": {} },
+      "parameters": {
+        "path": "calendar",
+        "responseMode": "responseNode",
+        "options": {}
+      },
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
-      "position": [0, 0],
-      "id": "14c2bdc9-fa66-479b-b07e-6f98502f6e48",
+      "position": [
+        -224,
+        192
+      ],
+      "id": "784b71d2-9696-4d39-baf6-30ff586fc9e3",
       "name": "Webhook",
       "webhookId": "0ad0925e-0d76-4075-a99f-68b3cd206968"
     },
@@ -28,16 +26,31 @@
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
-      "position": [208, 0],
-      "id": "79f76035-9319-4594-bcb9-b07a3df4a0fd",
-      "name": "HTTP Request"
+      "position": [
+        0,
+        0
+      ],
+      "id": "d21cadad-9e8f-4521-a7e0-dd88b0400210",
+      "name": "HTTP Request",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "YOUR_GOOGLE_CAL_CRED_ID",
+          "name": "My Google Calendar"
+        }
+      }
     },
     {
-      "parameters": { "fieldToSplitOut": "items", "options": {} },
+      "parameters": {
+        "fieldToSplitOut": "items",
+        "options": {}
+      },
       "type": "n8n-nodes-base.splitOut",
       "typeVersion": 1,
-      "position": [416, 0],
-      "id": "7a4687a8-2cd0-44a0-a41d-a14557ccbef3",
+      "position": [
+        224,
+        0
+      ],
+      "id": "6ef8740e-04fd-4d28-a770-3f0e40991074",
       "name": "Split Out"
     },
     {
@@ -48,20 +61,44 @@
         "sendQuery": true,
         "queryParameters": {
           "parameters": [
-            { "name": "timeMin", "value": "={{ $now.startOf('day').toISO() }}" },
-            { "name": "timeMax", "value": "={{ $now.plus(7, 'days').toISO() }}" },
-            { "name": "singleEvents", "value": "=true" },
-            { "name": "orderBy", "value": "=startTime" },
-            { "name": "maxResults", "value": "50" }
+            {
+              "name": "timeMin",
+              "value": "={{ $now.startOf('day').toISO() }}"
+            },
+            {
+              "name": "timeMax",
+              "value": "={{ $now.plus(7, 'days').toISO() }}"
+            },
+            {
+              "name": "singleEvents",
+              "value": "=true"
+            },
+            {
+              "name": "orderBy",
+              "value": "=startTime"
+            },
+            {
+              "name": "maxResults",
+              "value": "50"
+            }
           ]
         },
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
-      "position": [624, 0],
-      "id": "df4b16dc-1eec-4429-8b0b-219e0e58a53c",
-      "name": "Get Events"
+      "position": [
+        448,
+        0
+      ],
+      "id": "56a046fa-41b8-41f8-8187-958d6f7be288",
+      "name": "Get Events",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "YOUR_GOOGLE_CAL_CRED_ID",
+          "name": "My Google Calendar"
+        }
+      }
     },
     {
       "parameters": {
@@ -69,16 +106,25 @@
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1040, 0],
-      "id": "d748aa33-aa81-44d2-afcc-0804ddff5d75",
+      "position": [
+        1120,
+        192
+      ],
+      "id": "f3007d17-3af1-4c61-b804-60799f2cfcb9",
       "name": "Flatten and Sort"
     },
     {
-      "parameters": { "respondWith": "allIncomingItems", "options": {} },
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
-      "position": [1248, 0],
-      "id": "d6411cd4-4b9c-4c40-9448-b68653ffcd5b",
+      "position": [
+        1344,
+        192
+      ],
+      "id": "0aa5d560-9333-49d6-87d2-90e767d96803",
       "name": "Respond to Webhook"
     },
     {
@@ -91,7 +137,12 @@
               "value": "={{ $('Split Out').item.json.summaryOverride || $('Split Out').item.json.summary }}",
               "type": "string"
             },
-            { "id": "8b1c1f2a-1111-4a3b-9c2d-aaa111111111", "name": "account", "value": "Google", "type": "string" }
+            {
+              "id": "8b1c1f2a-1111-4a3b-9c2d-aaa111111111",
+              "name": "account",
+              "value": "Google",
+              "type": "string"
+            }
           ]
         },
         "includeOtherFields": true,
@@ -99,136 +150,365 @@
       },
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
-      "position": [832, 0],
-      "id": "2f95b95f-b356-441e-ac81-7951e000b6d8",
+      "position": [
+        672,
+        0
+      ],
+      "id": "9802deb0-565a-42f6-a641-8986549f0cad",
       "name": "Edit Fields"
     },
     {
-      "id": "c3d4709d-0123-4fa8-a878-cd335e8cd5b3",
-      "name": "Get JonDoe@Outlook1 Calendars",
+      "parameters": {
+        "resource": "calendar",
+        "returnAll": true,
+        "filters": {}
+      },
+      "id": "5059ed25-de99-4ef3-8696-ea0e05ee4d67",
+      "name": "Get Account1 Calendars",
       "type": "n8n-nodes-base.microsoftOutlook",
       "typeVersion": 2,
-      "position": [208, 200],
-      "parameters": { "resource": "calendar", "operation": "getAll", "returnAll": true, "filters": {} }
+      "position": [
+        224,
+        192
+      ],
+      "webhookId": "7f1ed24b-e534-4f9c-80dd-22be25a43a07",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "YOUR_OUTLOOK_CRED_ID_1",
+          "name": "Outlook Account 1"
+        }
+      }
     },
     {
-      "id": "ab7a25e1-570a-4b0e-a2dd-bf4f0d407e58",
-      "name": "Get JonDoe@Outlook1 Events",
-      "type": "n8n-nodes-base.microsoftOutlook",
-      "typeVersion": 2,
-      "position": [416, 200],
       "parameters": {
         "resource": "event",
-        "operation": "getAll",
         "fromAllCalendars": false,
-        "calendarId": { "__rl": true, "mode": "id", "value": "={{ $json.id }}" },
+        "calendarId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.id }}"
+        },
         "includeRecurringInstances": true,
         "startDateTime": "={{ $now.startOf('day').toISO() }}",
         "endDateTime": "={{ $now.plus(7,'days').toISO() }}",
         "returnAll": true,
         "output": "raw"
+      },
+      "id": "c4c0d74e-beb8-498f-9e67-ed9c5c397973",
+      "name": "Get Account1 Events",
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        448,
+        192
+      ],
+      "webhookId": "f8fe8e3c-aac7-4784-ae8a-4bd6cfc19a3f",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "YOUR_OUTLOOK_CRED_ID_1",
+          "name": "Outlook Account 1"
+        }
       }
     },
     {
-      "id": "fb4043d4-133a-427a-b3d7-d6b493180182",
-      "name": "Edit Fields Outlook1",
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [624, 200],
       "parameters": {
         "assignments": {
           "assignments": [
             {
               "id": "8b1c1f2a-2222-4a3b-9c2d-aaa222222222",
               "name": "calendarName",
-              "value": "={{ $('Get JonDoe@Outlook1 Calendars').item.json.name }}",
+              "value": "={{ $('Get Account1 Calendars').item.json.name }}",
               "type": "string"
             },
-            { "id": "8b1c1f2a-3333-4a3b-9c2d-aaa333333333", "name": "account", "value": "JonDoe - Outlook1", "type": "string" }
+            {
+              "id": "8b1c1f2a-3333-4a3b-9c2d-aaa333333333",
+              "name": "account",
+              "value": "Account1",
+              "type": "string"
+            }
           ]
         },
         "includeOtherFields": true,
         "options": {}
+      },
+      "id": "98afda19-f593-4ace-b9c6-f79290d4d680",
+      "name": "Edit Fields Account1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        672,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "calendar",
+        "returnAll": true,
+        "filters": {}
+      },
+      "id": "5ba65098-667a-44a1-a354-3d884a6c550a",
+      "name": "Get Account2 Calendars",
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        224,
+        384
+      ],
+      "webhookId": "5caec475-4c74-444d-84f6-752e86be373f",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "YOUR_OUTLOOK_CRED_ID_2",
+          "name": "Outlook Account 2"
+        }
       }
     },
     {
-      "id": "150f5ebe-c31c-4abb-b40c-44bb19af14aa",
-      "name": "Get JonDoe@Outlook2 Calendars",
-      "type": "n8n-nodes-base.microsoftOutlook",
-      "typeVersion": 2,
-      "position": [208, 400],
-      "parameters": { "resource": "calendar", "operation": "getAll", "returnAll": true, "filters": {} }
-    },
-    {
-      "id": "19d54a1c-a790-4caa-8ea5-dddae8eea8af",
-      "name": "Get JonDoe@Outlook2 Events",
-      "type": "n8n-nodes-base.microsoftOutlook",
-      "typeVersion": 2,
-      "position": [416, 400],
       "parameters": {
         "resource": "event",
-        "operation": "getAll",
         "fromAllCalendars": false,
-        "calendarId": { "__rl": true, "mode": "id", "value": "={{ $json.id }}" },
+        "calendarId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.id }}"
+        },
         "includeRecurringInstances": true,
         "startDateTime": "={{ $now.startOf('day').toISO() }}",
         "endDateTime": "={{ $now.plus(7,'days').toISO() }}",
         "returnAll": true,
         "output": "raw"
+      },
+      "id": "e92f69f7-d030-44b8-8c71-49a99d66ab63",
+      "name": "Get Account2 Events",
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        448,
+        384
+      ],
+      "webhookId": "265c9de6-1f84-4571-86b0-e07b1dfe955e",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "YOUR_OUTLOOK_CRED_ID_2",
+          "name": "Outlook Account 2"
+        }
       }
     },
     {
-      "id": "7d70b53f-5d3f-4edd-95d2-ffb76ac1c186",
-      "name": "Edit Fields Outlook2",
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [624, 400],
       "parameters": {
         "assignments": {
           "assignments": [
             {
               "id": "8b1c1f2a-4444-4a3b-9c2d-aaa444444444",
               "name": "calendarName",
-              "value": "={{ $('Get JonDoe@Outlook2 Calendars').item.json.name }}",
+              "value": "={{ $('Get Account2 Calendars').item.json.name }}",
               "type": "string"
             },
-            { "id": "8b1c1f2a-5555-4a3b-9c2d-aaa555555555", "name": "account", "value": "JonDoe - Outlook2", "type": "string" }
+            {
+              "id": "8b1c1f2a-5555-4a3b-9c2d-aaa555555555",
+              "name": "account",
+              "value": "Account2",
+              "type": "string"
+            }
           ]
         },
         "includeOtherFields": true,
         "options": {}
-      }
+      },
+      "id": "86a629c3-6a2f-4451-baaf-67a9988ea806",
+      "name": "Edit Fields Account2",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        672,
+        384
+      ]
     },
     {
-      "id": "12b3f7a5-2f7a-4345-90d7-b31cc28a0a29",
+      "parameters": {
+        "numberInputs": 3
+      },
+      "id": "dc1d0851-0fc2-458e-adfb-773b27c99d90",
       "name": "Merge",
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
-      "position": [928, 150],
-      "parameters": { "mode": "append", "numberInputs": 3 }
+      "position": [
+        896,
+        176
+      ]
     }
   ],
+  "pinData": {},
   "connections": {
     "Webhook": {
       "main": [
         [
-          { "node": "HTTP Request", "type": "main", "index": 0 },
-          { "node": "Get JonDoe@Outlook1 Calendars", "type": "main", "index": 0 },
-          { "node": "Get JonDoe@Outlook2 Calendars", "type": "main", "index": 0 }
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Account1 Calendars",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Account2 Calendars",
+            "type": "main",
+            "index": 0
+          }
         ]
       ]
     },
-    "HTTP Request": { "main": [[{ "node": "Split Out", "type": "main", "index": 0 }]] },
-    "Split Out": { "main": [[{ "node": "Get Events", "type": "main", "index": 0 }]] },
-    "Get Events": { "main": [[{ "node": "Edit Fields", "type": "main", "index": 0 }]] },
-    "Flatten and Sort": { "main": [[{ "node": "Respond to Webhook", "type": "main", "index": 0 }]] },
-    "Edit Fields": { "main": [[{ "node": "Merge", "type": "main", "index": 0 }]] },
-    "Get JonDoe@Outlook1 Calendars": { "main": [[{ "node": "Get JonDoe@Outlook1 Events", "type": "main", "index": 0 }]] },
-    "Get JonDoe@Outlook1 Events": { "main": [[{ "node": "Edit Fields Outlook1", "type": "main", "index": 0 }]] },
-    "Edit Fields Outlook1": { "main": [[{ "node": "Merge", "type": "main", "index": 1 }]] },
-    "Get JonDoe@Outlook2 Calendars": { "main": [[{ "node": "Get JonDoe@Outlook2 Events", "type": "main", "index": 0 }]] },
-    "Get JonDoe@Outlook2 Events": { "main": [[{ "node": "Edit Fields Outlook2", "type": "main", "index": 0 }]] },
-    "Edit Fields Outlook2": { "main": [[{ "node": "Merge", "type": "main", "index": 2 }]] },
-    "Merge": { "main": [[{ "node": "Flatten and Sort", "type": "main", "index": 0 }]] }
-  }
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Get Events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Events": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Flatten and Sort": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Account1 Calendars": {
+      "main": [
+        [
+          {
+            "node": "Get Account1 Events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Account1 Events": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields Account1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields Account1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Get Account2 Calendars": {
+      "main": [
+        [
+          {
+            "node": "Get Account2 Events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Account2 Events": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields Account2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields Account2": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Flatten and Sort",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "timeSavedPerExecution": 30
+  },
+  "versionId": "e2669e76-2a36-4e12-98a4-c628fc962e26",
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp",
+    "instanceId": "YOUR_INSTANCE_ID"
+  },
+  "nodeGroups": [],
+  "id": "tr0orqmOqz5GiQ4F",
+  "tags": []
 }

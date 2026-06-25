@@ -1,13 +1,5 @@
-{
-  "name": "Daily Digest - Todoist",
-  "active": false,
-  "isArchived": false,
-  "description": "Pulls Todoist tasks due today, overdue, and P1/P2 (by due date or deadline) in the next 14 days; groups them and emits both structured objects and ready-made display strings via webhook (GET /webhook/todoist).",
-  "settings": {
-    "executionOrder": "v1",
-    "binaryMode": "separate",
-    "availableInMCP": true
-  },
+﻿{
+  "name": "todoist-digest",
   "nodes": [
     {
       "parameters": {
@@ -18,18 +10,16 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
       "position": [
-        0,
-        200
+        1504,
+        112
       ],
-      "id": "d654324e-6ebc-460e-80ad-76e660e8a3f2",
+      "id": "dda2cc1e-6fc1-4f1d-b88c-489abb5840e1",
       "name": "Webhook",
-      "webhookId": "00000000-0000-0000-0000-000000000000"
+      "webhookId": "a5b5e28a-57df-461b-a0e1-f996b1597773"
     },
     {
       "parameters": {
-        "resource": "task",
         "operation": "getAll",
-        "authentication": "apiKey",
         "returnAll": true,
         "filters": {
           "filter": "today"
@@ -38,17 +28,21 @@
       "type": "n8n-nodes-base.todoist",
       "typeVersion": 2.2,
       "position": [
-        208,
-        0
+        1728,
+        -80
       ],
-      "id": "ca7c2e64-1a9e-49e6-a7fe-58ea6230bcbf",
-      "name": "Get Due Today"
+      "id": "b4d400b2-5877-42b1-ad64-accae9392e0e",
+      "name": "Get Due Today",
+      "credentials": {
+        "todoistApi": {
+          "id": "YOUR_TODOIST_CRED_ID",
+          "name": "Todoist API"
+        }
+      }
     },
     {
       "parameters": {
-        "resource": "task",
         "operation": "getAll",
-        "authentication": "apiKey",
         "returnAll": true,
         "filters": {
           "filter": "overdue"
@@ -57,17 +51,21 @@
       "type": "n8n-nodes-base.todoist",
       "typeVersion": 2.2,
       "position": [
-        208,
-        200
+        1728,
+        112
       ],
-      "id": "986833e3-5f64-4bd2-ac0f-b2c99b6f89f0",
-      "name": "Get Overdue"
+      "id": "64218edf-f9fa-4059-9f7f-607b32de76cf",
+      "name": "Get Overdue",
+      "credentials": {
+        "todoistApi": {
+          "id": "YOUR_TODOIST_CRED_ID",
+          "name": "Todoist API"
+        }
+      }
     },
     {
       "parameters": {
-        "resource": "task",
         "operation": "getAll",
-        "authentication": "apiKey",
         "returnAll": true,
         "filters": {
           "filter": "(p1 | p2) & ((due after: today & due before: +15 days) | (deadline after: today & deadline before: +15 days))"
@@ -76,11 +74,17 @@
       "type": "n8n-nodes-base.todoist",
       "typeVersion": 2.2,
       "position": [
-        208,
-        400
+        1728,
+        304
       ],
-      "id": "7d48cfef-b1e7-42ad-8ff7-2f74d1a8b4b5",
-      "name": "Get Upcoming P1/P2"
+      "id": "7737e1d1-43fe-4f48-a80b-82d52406c5d8",
+      "name": "Get Upcoming P1/P2",
+      "credentials": {
+        "todoistApi": {
+          "id": "YOUR_TODOIST_CRED_ID",
+          "name": "Todoist API"
+        }
+      }
     },
     {
       "parameters": {
@@ -100,10 +104,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        416,
-        0
+        1952,
+        -80
       ],
-      "id": "7d3b6ae4-bfda-47ef-9c91-a63e0748ff0d",
+      "id": "cba5aae0-eebd-4465-b172-18eb473882fd",
       "name": "Tag dueToday"
     },
     {
@@ -124,10 +128,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        416,
-        200
+        1952,
+        112
       ],
-      "id": "1666b29e-0381-4f15-b8b6-bde85f8c25c0",
+      "id": "da69b90e-1dfa-4f36-8c6f-70c7f28fca52",
       "name": "Tag overdue"
     },
     {
@@ -148,24 +152,23 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        416,
-        400
+        1952,
+        304
       ],
-      "id": "2e33ce71-4ed4-4c76-ae95-29bb8c68626b",
+      "id": "a0d49744-e38f-47c2-9760-aa0ab98becac",
       "name": "Tag upcoming"
     },
     {
       "parameters": {
-        "mode": "append",
         "numberInputs": 3
       },
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        624,
-        200
+        2176,
+        96
       ],
-      "id": "35ac47fd-d039-4717-9aa5-8e9b803c22bb",
+      "id": "9fedacfa-d975-4b3f-9c67-9e46358c65d1",
       "name": "Merge"
     },
     {
@@ -175,10 +178,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        832,
-        200
+        2400,
+        112
       ],
-      "id": "74f32c83-aaf5-4e35-a446-35fd9623b2fe",
+      "id": "aee939bc-aaf3-4b6b-b825-6998db0cec72",
       "name": "Group by bucket"
     },
     {
@@ -189,13 +192,14 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
       "position": [
-        1040,
-        200
+        2624,
+        112
       ],
-      "id": "40326cc4-133e-465f-b0cd-38f2453fed8f",
+      "id": "c5d29484-6787-4bf2-a0e0-9e4a6740d665",
       "name": "Respond to Webhook"
     }
   ],
+  "pinData": {},
   "connections": {
     "Webhook": {
       "main": [
@@ -306,5 +310,22 @@
         ]
       ]
     }
-  }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "timeSavedPerExecution": 30
+  },
+  "versionId": "b63573d7-138d-42a2-ba32-2362a59b189f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "YOUR_INSTANCE_ID"
+  },
+  "nodeGroups": [],
+  "id": "KfNeyMn6Bganx5ns",
+  "tags": []
 }

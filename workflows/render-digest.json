@@ -1,30 +1,22 @@
-{
-  "name": "Daily Digest - Render",
-  "active": false,
-  "isArchived": false,
-  "description": "Receives a structured digest JSON (POST /webhook/render-digest), validates it, renders a self-contained styled HTML document, and delivers it to Telegram as a document attachment. Content is HTML-escaped in code.",
-  "settings": {
-    "executionOrder": "v1",
-    "binaryMode": "separate",
-    "availableInMCP": true
-  },
+﻿{
+  "name": "render-digest",
   "nodes": [
     {
       "parameters": {
         "httpMethod": "POST",
-        "path": "render-digest",
+        "path": "render",
         "responseMode": "responseNode",
         "options": {}
       },
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
       "position": [
-        0,
-        0
+        -624,
+        48
       ],
-      "id": "c050b9e5-8e2c-4aca-a90c-ec0a8d83831f",
+      "id": "19ea70e7-88a9-45f5-b6ed-2375b137f9d7",
       "name": "Webhook",
-      "webhookId": "d68fb841-c2f9-4c9c-9044-08c6c382bff4"
+      "webhookId": "32725217-9a0f-4828-a1e9-ed324b4f7d42"
     },
     {
       "parameters": {
@@ -33,10 +25,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        208,
-        0
+        -400,
+        48
       ],
-      "id": "0b75bce3-a68e-4d15-8749-7b90139758d5",
+      "id": "6894426f-1f77-4b5d-bf4b-8d08f0d0bbe2",
       "name": "Validate"
     },
     {
@@ -44,12 +36,13 @@
         "conditions": {
           "options": {
             "caseSensitive": true,
+            "leftValue": "",
             "typeValidation": "strict",
             "version": 2
           },
           "conditions": [
             {
-              "id": "1d27f9d6-fe77-4489-8821-e03520b2f254",
+              "id": "f0886e41-1ab3-4af0-82b6-6f2c08eadac1",
               "leftValue": "={{ $json.valid }}",
               "rightValue": true,
               "operator": {
@@ -66,31 +59,30 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        416,
-        0
+        -176,
+        48
       ],
-      "id": "59dc3741-0259-447b-9d04-3794044ada27",
+      "id": "718a735c-3117-40b5-87e3-9f9c2003626c",
       "name": "Valid?"
     },
     {
       "parameters": {
-        "jsCode": "// Deterministically render the validated digest JSON to a self-contained HTML\n// document and attach it as base64 binary for the Telegram node. All content\n// fields are HTML-escaped here, in code -- not trusted from the model.\nconst d = $json.digest;\n\nconst esc = (s) => String(s == null ? '' : s)\n  .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')\n  .replace(/\"/g, '&quot;').replace(/'/g, '&#39;');\n\nconst SEV = new Set(['urgent', 'attention', 'info', 'done']);\nconst sev = (s) => (SEV.has(s) ? s : 'info');\nconst chip = (severity, label) => '<span class=\"chip ' + sev(severity) + '\">' + esc(label) + '</span>';\nconst metaLine = (meta) => meta ? '<div class=\"meta\">' + esc(meta) + '</div>' : '';\nconst snippetLine = (snip) => snip ? '<div class=\"snippet\">' + esc(snip) + '</div>' : '';\nconst quiet = (msg) => '<div class=\"quiet\">' + esc(msg) + '</div>';\n\nconst item = (it) => `\n      <div class=\"item\">\n        <div class=\"row\">${chip(it.severity, it.chip)}<span class=\"title\">${esc(it.title)}</span></div>\n        ${metaLine(it.meta)}\n        ${snippetLine(it.snippet)}\n      </div>`;\n\nconst itemsOrQuiet = (arr, emptyMsg) => (arr && arr.length) ? arr.map(item).join('') : quiet(emptyMsg);\n\nconst schedule = d.schedule || { allDay: [], timed: [] };\nconst allDayHtml = (schedule.allDay && schedule.allDay.length)\n  ? schedule.allDay.map((e) => `\n      <div class=\"item\">\n        <div class=\"row\"><span class=\"chip info\">All day</span><span class=\"title\">${esc(e.title)}</span></div>\n        ${metaLine(e.meta)}\n      </div>`).join('')\n  : quiet('No all-day events found.');\nconst timedHtml = (schedule.timed && schedule.timed.length)\n  ? schedule.timed.map((e) => `\n      <div class=\"item\">\n        <div class=\"row\"><span class=\"chip info\">${esc(e.time)}</span><span class=\"title\">${esc(e.title)}</span></div>\n        ${metaLine(e.meta)}\n      </div>`).join('')\n  : quiet('No timed events today.');\n\nconst t = d.todoist || { dueToday: [], overdue: [], upcoming: [] };\nconst liList = (arr, emptyMsg) => (arr && arr.length)\n  ? '<ul>' + arr.map((x) => '<li>' + esc(x) + '</li>').join('') + '</ul>'\n  : quiet(emptyMsg);\n\nconst actions = (d.actions && d.actions.length)\n  ? '<ul>' + d.actions.map((a) => '<li>' + esc(a) + '</li>').join('') + '</ul>'\n  : quiet('No suggested actions.');\n\nconst m = d.metrics || {};\nconst weekday = d.weekday || d.date;\n\nconst html = `<!doctype html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<title>Daily Digest - ${esc(d.date)}</title>\n<style>\n    :root {\n      color-scheme: light;\n      --ink: #1f2933; --muted: #627082; --line: #d8dee8; --paper: #f6f8fb;\n      --card: #ffffff; --navy: #243b53; --teal: #157a6e; --gold: #b7791f;\n      --red: #b42318; --green: #2f855a; --blue: #2563eb;\n    }\n    * { box-sizing: border-box; }\n    body { margin: 0; background: var(--paper); color: var(--ink);\n      font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Arial, sans-serif; line-height: 1.45; }\n    .wrap { max-width: 980px; margin: 0 auto; padding: 28px 18px 44px; }\n    header { border-bottom: 1px solid var(--line); padding-bottom: 16px; margin-bottom: 18px; }\n    h1 { margin: 0 0 6px; color: var(--navy); font-size: 28px; }\n    .subhead { color: var(--muted); font-size: 14px; }\n    .summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 18px 0 22px; }\n    .metric { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 12px; }\n    .metric b { display: block; font-size: 22px; color: var(--navy); }\n    .metric span { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }\n    section { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 16px; margin: 12px 0; }\n    h2 { margin: 0 0 12px; color: var(--navy); font-size: 17px; }\n    .item { border-top: 1px solid #edf1f6; padding: 11px 0; }\n    .item:first-of-type { border-top: 0; padding-top: 0; }\n    .row { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }\n    .title { font-weight: 650; color: var(--ink); }\n    .meta { color: var(--muted); font-size: 13px; margin-top: 3px; }\n    .snippet { color: #374151; font-size: 14px; margin-top: 5px; }\n    .chip { display: inline-block; border-radius: 999px; padding: 2px 8px; font-size: 12px; font-weight: 700;\n      line-height: 1.7; border: 1px solid transparent; white-space: nowrap; }\n    .urgent { color: var(--red); background: #fff1f0; border-color: #ffd2cf; }\n    .attention { color: var(--gold); background: #fff8e6; border-color: #f6d68b; }\n    .info { color: var(--blue); background: #eef4ff; border-color: #cfe0ff; }\n    .done { color: var(--green); background: #edf7f1; border-color: #cce8d5; }\n    .quiet { color: var(--muted); font-size: 14px; padding: 2px 0; }\n    a { color: #1d4ed8; text-decoration: none; }\n    a:hover { text-decoration: underline; }\n    ul { margin: 6px 0 0 18px; padding: 0; }\n    li { margin: 5px 0; }\n    .task-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }\n    .task-col { border: 1px solid #edf1f6; border-radius: 8px; padding: 12px; min-width: 0; }\n    .task-col h3 { margin: 0 0 8px; font-size: 14px; color: var(--navy); }\n    footer { color: var(--muted); font-size: 12px; margin-top: 18px; text-align: center; }\n    @media (max-width: 760px) {\n      .summary, .task-grid { grid-template-columns: 1fr; }\n      .wrap { padding: 18px 12px 32px; }\n      h1 { font-size: 24px; } section { padding: 14px; }\n    }\n</style>\n</head>\n<body>\n<main class=\"wrap\">\n<header>\n<h1>Daily Digest</h1>\n<div class=\"subhead\">${esc(weekday)} &middot; Generated from calendar, email, and Todoist sources. Low-signal mail was filtered out.</div>\n</header>\n<div class=\"summary\" aria-label=\"Digest summary\">\n<div class=\"metric\"><b>${esc(m.todayEvents)}</b><span>Today events</span></div>\n<div class=\"metric\"><b>${esc(m.overdueTasks)}</b><span>Overdue tasks</span></div>\n<div class=\"metric\"><b>${esc(m.priorityEmails)}</b><span>Priority emails</span></div>\n<div class=\"metric\"><b>${esc(m.upcomingP1P2)}</b><span>Upcoming P1/P2</span></div>\n</div>\n<section><h2>Today&apos;s Schedule</h2>${allDayHtml}${timedHtml}</section>\n<section><h2>Upcoming Deadlines / Time-Sensitive Items</h2>${itemsOrQuiet(d.deadlines, 'Nothing time-sensitive.')}</section>\n<section><h2>Important Emails</h2>${itemsOrQuiet(d.emails, 'No priority emails.')}</section>\n<section><h2>Todoist</h2>\n<div class=\"task-grid\">\n<div class=\"task-col\"><h3>Due Today</h3>${liList(t.dueToday, 'No Todoist tasks due today.')}</div>\n<div class=\"task-col\"><h3>Overdue</h3>${liList(t.overdue, 'Nothing overdue.')}</div>\n<div class=\"task-col\"><h3>P1/P2 Next 14 Days</h3>${liList(t.upcoming, 'Nothing upcoming.')}</div>\n</div>\n</section>\n<section><h2>FYI / Low Priority</h2>${itemsOrQuiet(d.fyi, 'Nothing here.')}</section>\n<section><h2>Suggested Actions</h2>${actions}</section>\n<footer>Static local digest. Calendar, email, and task content was summarized and HTML-escaped in n8n before insertion.</footer>\n</main>\n</body>\n</html>`;\n\nconst fileName = 'daily-digest-' + d.date + '.html';\nconst base64 = Buffer.from(html, 'utf8').toString('base64');\n\nreturn [{\n  json: { fileName, caption: 'Daily Digest - ' + d.date },\n  binary: { data: { data: base64, mimeType: 'text/html', fileName, fileExtension: 'html' } },\n}];\n"
+        "jsCode": "// Deterministically render the validated digest JSON to a self-contained HTML\n// document and attach it as base64 binary for the Telegram node. All content\n// fields are HTML-escaped here, in code -- not trusted from the model.\nconst d = $json.digest;\n\nconst esc = (s) => String(s == null ? '' : s)\n  .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')\n  .replace(/\"/g, '&quot;').replace(/'/g, '&#39;');\n\nconst SEV = new Set(['urgent', 'attention', 'info', 'done']);\nconst sev = (s) => (SEV.has(s) ? s : 'info');\nconst chip = (severity, label) => '<span class=\"chip ' + sev(severity) + '\">' + esc(label) + '</span>';\n\n// Only allow http(s) links; render as clean anchors appended to the meta line.\nconst safeUrl = (u) => /^https?:\\/\\//i.test(String(u || '')) ? String(u) : '';\nconst metaBlock = (meta, links) => {\n  const anchors = (Array.isArray(links) ? links : [])\n    .filter((l) => l && safeUrl(l.url))\n    .map((l) => '<a href=\"' + esc(safeUrl(l.url)) + '\">' + esc(l.label || 'link') + '</a>');\n  const parts = [];\n  if (meta) parts.push(esc(meta));\n  if (anchors.length) parts.push(anchors.join(' &middot; '));\n  return parts.length ? '<div class=\"meta\">' + parts.join(' &middot; ') + '</div>' : '';\n};\nconst snippetLine = (snip) => snip ? '<div class=\"snippet\">' + esc(snip) + '</div>' : '';\nconst quiet = (msg) => '<div class=\"quiet\">' + esc(msg) + '</div>';\n\nconst item = (it) => `\n      <div class=\"item\">\n        <div class=\"row\">${chip(it.severity, it.chip)}<span class=\"title\">${esc(it.title)}</span></div>\n        ${metaBlock(it.meta, it.links)}\n        ${snippetLine(it.snippet)}\n      </div>`;\n\nconst itemsOrQuiet = (arr, emptyMsg) => (arr && arr.length) ? arr.map(item).join('') : quiet(emptyMsg);\n\nconst schedule = d.schedule || { allDay: [], timed: [] };\nconst allDayHtml = (schedule.allDay && schedule.allDay.length)\n  ? schedule.allDay.map((e) => `\n      <div class=\"item\">\n        <div class=\"row\"><span class=\"chip info\">All day</span><span class=\"title\">${esc(e.title)}</span></div>\n        ${metaBlock(e.meta, e.links)}\n      </div>`).join('')\n  : quiet('No all-day events found.');\nconst timedHtml = (schedule.timed && schedule.timed.length)\n  ? schedule.timed.map((e) => `\n      <div class=\"item\">\n        <div class=\"row\"><span class=\"chip info\">${esc(e.time)}</span><span class=\"title\">${esc(e.title)}</span></div>\n        ${metaBlock(e.meta, e.links)}\n      </div>`).join('')\n  : quiet('No timed events today.');\n\nconst t = d.todoist || { dueToday: [], overdue: [], upcoming: [] };\nconst liList = (arr, emptyMsg) => (arr && arr.length)\n  ? '<ul>' + arr.map((x) => '<li>' + esc(x) + '</li>').join('') + '</ul>'\n  : quiet(emptyMsg);\n\nconst actions = (d.actions && d.actions.length)\n  ? '<ul>' + d.actions.map((a) => '<li>' + esc(a) + '</li>').join('') + '</ul>'\n  : quiet('No suggested actions.');\n\nconst m = d.metrics || {};\nconst weekday = d.weekday || d.date;\n\nconst html = `<!doctype html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<title>Daily Digest - ${esc(d.date)}</title>\n<style>\n    :root {\n      color-scheme: light;\n      --ink: #1f2933; --muted: #627082; --line: #d8dee8; --paper: #f6f8fb;\n      --card: #ffffff; --navy: #243b53; --teal: #157a6e; --gold: #b7791f;\n      --red: #b42318; --green: #2f855a; --blue: #2563eb;\n    }\n    * { box-sizing: border-box; }\n    body { margin: 0; background: var(--paper); color: var(--ink);\n      font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Arial, sans-serif; line-height: 1.45; }\n    .wrap { max-width: 980px; margin: 0 auto; padding: 28px 18px 44px; }\n    header { border-bottom: 1px solid var(--line); padding-bottom: 16px; margin-bottom: 18px; }\n    h1 { margin: 0 0 6px; color: var(--navy); font-size: 28px; }\n    .subhead { color: var(--muted); font-size: 14px; }\n    .summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 18px 0 22px; }\n    .metric { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 12px; }\n    .metric b { display: block; font-size: 22px; color: var(--navy); }\n    .metric span { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }\n    section { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 16px; margin: 12px 0; }\n    h2 { margin: 0 0 12px; color: var(--navy); font-size: 17px; }\n    .item { border-top: 1px solid #edf1f6; padding: 11px 0; }\n    .item:first-of-type { border-top: 0; padding-top: 0; }\n    .row { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }\n    .title { font-weight: 650; color: var(--ink); overflow-wrap: anywhere; word-break: break-word; min-width: 0; }\n    .meta { color: var(--muted); font-size: 13px; margin-top: 3px; overflow-wrap: anywhere; word-break: break-word; }\n    .snippet { color: #374151; font-size: 14px; margin-top: 5px; overflow-wrap: anywhere; word-break: break-word; }\n    .chip { display: inline-block; border-radius: 999px; padding: 2px 8px; font-size: 12px; font-weight: 700;\n      line-height: 1.7; border: 1px solid transparent; white-space: nowrap; }\n    .urgent { color: var(--red); background: #fff1f0; border-color: #ffd2cf; }\n    .attention { color: var(--gold); background: #fff8e6; border-color: #f6d68b; }\n    .info { color: var(--blue); background: #eef4ff; border-color: #cfe0ff; }\n    .done { color: var(--green); background: #edf7f1; border-color: #cce8d5; }\n    .quiet { color: var(--muted); font-size: 14px; padding: 2px 0; }\n    a { color: #1d4ed8; text-decoration: none; }\n    a:hover { text-decoration: underline; }\n    ul { margin: 6px 0 0 18px; padding: 0; }\n    li { margin: 5px 0; overflow-wrap: anywhere; word-break: break-word; }\n    .task-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }\n    .task-col { border: 1px solid #edf1f6; border-radius: 8px; padding: 12px; min-width: 0; }\n    .task-col h3 { margin: 0 0 8px; font-size: 14px; color: var(--navy); }\n    footer { color: var(--muted); font-size: 12px; margin-top: 18px; text-align: center; }\n    @media (max-width: 760px) {\n      .summary, .task-grid { grid-template-columns: 1fr; }\n      .wrap { padding: 18px 12px 32px; }\n      h1 { font-size: 24px; } section { padding: 14px; }\n    }\n</style>\n</head>\n<body>\n<main class=\"wrap\">\n<header>\n<h1>Daily Digest</h1>\n<div class=\"subhead\">${esc(weekday)} &middot; Generated from calendar, email, and Todoist sources. Low-signal mail was filtered out.</div>\n</header>\n<div class=\"summary\" aria-label=\"Digest summary\">\n<div class=\"metric\"><b>${esc(m.todayEvents)}</b><span>Today events</span></div>\n<div class=\"metric\"><b>${esc(m.overdueTasks)}</b><span>Overdue tasks</span></div>\n<div class=\"metric\"><b>${esc(m.priorityEmails)}</b><span>Priority emails</span></div>\n<div class=\"metric\"><b>${esc(m.upcomingP1P2)}</b><span>Upcoming P1/P2</span></div>\n</div>\n<section><h2>Today&apos;s Schedule</h2>${allDayHtml}${timedHtml}</section>\n<section><h2>Upcoming Deadlines / Time-Sensitive Items</h2>${itemsOrQuiet(d.deadlines, 'Nothing time-sensitive.')}</section>\n<section><h2>Important Emails</h2>${itemsOrQuiet(d.emails, 'No priority emails.')}</section>\n<section><h2>Todoist</h2>\n<div class=\"task-grid\">\n<div class=\"task-col\"><h3>Due Today</h3>${liList(t.dueToday, 'No Todoist tasks due today.')}</div>\n<div class=\"task-col\"><h3>Overdue</h3>${liList(t.overdue, 'Nothing overdue.')}</div>\n<div class=\"task-col\"><h3>P1/P2 Next 14 Days</h3>${liList(t.upcoming, 'Nothing upcoming.')}</div>\n</div>\n</section>\n<section><h2>FYI / Low Priority</h2>${itemsOrQuiet(d.fyi, 'Nothing here.')}</section>\n<section><h2>Suggested Actions</h2>${actions}</section>\n<footer>Static local digest. Calendar, email, and task content was summarized and HTML-escaped in n8n before insertion.</footer>\n</main>\n</body>\n</html>`;\n\nconst fileName = 'daily-digest-' + d.date + '.html';\nconst base64 = Buffer.from(html, 'utf8').toString('base64');\n\nreturn [{\n  json: { fileName, caption: 'Daily Digest - ' + d.date },\n  binary: { data: { data: base64, mimeType: 'text/html', fileName, fileExtension: 'html' } },\n}];\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        624,
-        -100
+        48,
+        -48
       ],
-      "id": "8d0ebb08-8432-409c-8199-9a4c48404d8b",
+      "id": "fcfb8449-43c6-4539-963b-ee1f97e8421e",
       "name": "Render HTML"
     },
     {
       "parameters": {
         "operation": "sendDocument",
-        "chatId": "",
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
         "binaryData": true,
-        "binaryPropertyName": "data",
         "additionalFields": {
           "caption": "={{ $json.caption }}",
           "fileName": "={{ $json.fileName }}"
@@ -99,11 +91,18 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        832,
-        -100
+        272,
+        -48
       ],
-      "id": "19d9d856-a344-4633-ac7e-936dac818d8b",
-      "name": "Send to Telegram"
+      "id": "a131de6f-c713-47bc-9183-397a7b2df742",
+      "name": "Send to Telegram",
+      "webhookId": "c2747801-b2da-4d57-9caa-b4eadcf3f75d",
+      "credentials": {
+        "telegramApi": {
+          "id": "YOUR_TELEGRAM_CRED_ID",
+          "name": "My Telegram Bot"
+        }
+      }
     },
     {
       "parameters": {
@@ -114,10 +113,10 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
       "position": [
-        1040,
-        -100
+        496,
+        -48
       ],
-      "id": "eaeff3e6-a55e-4511-b299-92652e0619a8",
+      "id": "532f2f1b-db30-4ffe-8f0e-8094fe0e56e4",
       "name": "Respond OK"
     },
     {
@@ -131,13 +130,14 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
       "position": [
-        624,
-        120
+        48,
+        144
       ],
-      "id": "c2115313-17df-4896-aedf-e9fc2bd42370",
+      "id": "a26bda1b-3c0a-4833-8118-6e08c0e6df0e",
       "name": "Respond Invalid"
     }
   ],
+  "pinData": {},
   "connections": {
     "Webhook": {
       "main": [
@@ -201,5 +201,21 @@
         ]
       ]
     }
-  }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "43af52bc-1ea0-4442-81c5-df333f30de9f",
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp",
+    "templateCredsSetupCompleted": true,
+    "instanceId": "YOUR_INSTANCE_ID"
+  },
+  "nodeGroups": [],
+  "id": "0w5WIsDGmfD0PvKu",
+  "tags": []
 }
